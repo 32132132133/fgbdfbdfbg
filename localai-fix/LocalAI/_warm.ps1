@@ -1,0 +1,1 @@
+﻿Invoke-RestMethod http://127.0.0.1:11434/api/generate -Method Post -Body '{"model":"qwen-heretic-32k","prompt":"hi","stream":false,"keep_alive":"60m","options":{"num_predict":1}}' -ContentType 'application/json' -TimeoutSec 300 | Out-Null
