@@ -33,7 +33,11 @@ function Warn($m) { Write-Host "  [주의] $m" -ForegroundColor Yellow; $notes.A
 function Bad($m)  { Write-Host "  [실패] $m" -ForegroundColor Red; $fails.Add($m) }
 function Ask($q)  { if ($Yes) { return $true }; (Read-Host "$q (Y/N)") -match '^[yY]' }
 function Up($u)   { try { (Invoke-WebRequest $u -UseBasicParsing -TimeoutSec 3).StatusCode -eq 200 } catch { $false } }
-function Sha($f)  { (Get-FileHash $f -Algorithm SHA256).Hash }
+# Get-FileHash 는 모듈 경로가 꼬이면(PowerShell 7 창에서 5.1 실행) 안 불러와져서 .NET 으로 직접 계산
+function Sha($f) {
+    $s = [IO.File]::OpenRead((Resolve-Path -LiteralPath $f).ProviderPath)
+    try { -join ([Security.Cryptography.SHA256]::Create().ComputeHash($s) | ForEach-Object { $_.ToString('X2') }) } finally { $s.Dispose() }
+}
 # 외부 프로그램(schtasks·ollama·uv 등)이 에러 출력만 내도 Windows PowerShell 5.1 에서 스크립트가 멈추지 않게
 function Q([scriptblock]$sb) { $ErrorActionPreference = 'Continue'; & $sb }
 function Api($path, $body, $timeout = 900) {
